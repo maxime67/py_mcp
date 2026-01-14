@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "movies-mcp-server": {
+      "type": "streamable_http",
+      "url": "http://localhost:12345/mcp"
+    }
+  }
+}
