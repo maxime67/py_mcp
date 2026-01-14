@@ -60,7 +60,7 @@ CMD ["uv", "run", "python", "src/mcp_tool_server.py"]
 FROM base AS agent
 
 # Variables d'environnement par défaut pour l'agent
-ENV LLM_BASE_URL=http://127.0.0.1:1234/v1 \
+ENV LLM_BASE_URL=http://llm-service:1234/v1 \
     LLM_MODEL=openai/gpt-oss-20b \
     LLM_TEMPERATURE=0.3 \
     LLM_API_KEY=not-needed \

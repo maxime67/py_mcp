@@ -14,10 +14,10 @@ set_debug(os.getenv("DEBUG", "false").lower() == "true")
 
 # --- Configuration via variables d'environnement ---
 LLM_CHAT_SERVER_BASE_URL = os.getenv("LLM_BASE_URL", "http://127.0.0.1:1234/v1")
-LLM_CHAT_MODEL = os.getenv("LLM_MODEL", "openai/gpt-oss-20b")
+LLM_CHAT_MODEL = os.getenv("LLM_MODEL", "qwen3-4b-instruct-2507")
 LLM_CHAT_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.3"))
 LLM_CHAT_API_KEY = os.getenv("LLM_API_KEY", "not-needed")
-MCP_CONFIG_PATH = os.getenv("MCP_CONFIG_PATH", "/app/resources/servers.json")
+MCP_CONFIG_PATH = os.getenv("MCP_CONFIG_PATH", "resources/servers.json")
 
 agent_executor: AgentExecutor | None = None
 mcp_client: MCPClient | None = None
@@ -92,20 +92,23 @@ async def build_agent() -> AgentExecutor:
     return AgentExecutor(agent=agent, tools=langchain_tools, verbose=True)
 
 async def run_agent():
-    # variable globale utile uniquement si par la suite vous souhaitez initialiser l'agent
-    # depuis FastAPI via @asynccontextmanager / async def lifespan(app: FastAPI):
-    global agent_executor
+    global agent_executor, mcp_client
     print("Démarrage de l'application : initialisation de l'agent...")
     agent_executor = await build_agent()
-    print("Agent prêt à transmettre une requête.")
-    if agent_executor:
-        user_request = "Pour le film avec l'ID 1, peux-tu m'afficher le synopsis pertinent ?"
+    print("\nAgent prêt. Tapez 'quit' pour quitter.\n")
+
+    while True:
+        user_request = input("Vous: ")
+        if user_request.lower() in ["quit", "exit", "q"]:
+            break
+        if not user_request.strip():
+            continue
         response = await agent_executor.ainvoke({"input": user_request})
-        print(response.get("output", "Pas de sortie de l'agent."))
-    print("Arrêt de l'application : fermeture des sessions MCP...")
+        print(f"\nAgent: {response.get('output', 'Pas de réponse.')}\n")
+
+    print("Fermeture...")
     if mcp_client:
         await mcp_client.close_all_sessions()
-    print("Sessions fermées.")
 
 async def main():
     await run_agent()
