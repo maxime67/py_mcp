@@ -1,5 +1,10 @@
 import asyncio
+import os
 from mcp.server.fastmcp import FastMCP
+
+# --- Configuration via variables d'environnement ---
+MCP_SERVER_PORT = int(os.getenv("MCP_SERVER_PORT", "12345"))
+MCP_SERVER_NAME = os.getenv("MCP_SERVER_NAME", "movies-mcp-server")
 
 # --- 1. La base de données locale du serveur ---
 # C'est la seule source de vérité pour les données des films.
@@ -26,7 +31,7 @@ FILM_DATABASE = {
 
 # --- 2. Création du serveur MCP ---
 async def main():
-    mcp = FastMCP("movies-mcp-server", json_response=True, port=12345)
+    mcp = FastMCP(MCP_SERVER_NAME, json_response=True, port=MCP_SERVER_PORT)
 
     # --- 3. Définition de l'unique outil ---
     # Cet outil ne fait aucune analyse, il retourne juste le synopsis d'un film, donné son ID.
@@ -47,7 +52,7 @@ async def main():
             return {"error": f"Film avec l'ID {film_id} non trouvé"}
 
     # --- 4. Démarrage du serveur ---
-    print("Serveur de données MCP démarré sur le port 12345...")
+    print(f"Serveur de données MCP démarré sur le port {MCP_SERVER_PORT}...")
     print("Ce terminal est maintenant dédié au serveur. Laissez-le tourner.")
     await mcp.run_streamable_http_async()
 

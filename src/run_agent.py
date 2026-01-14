@@ -1,4 +1,5 @@
 import asyncio
+import os
 from typing import List, Dict, Any, Type
 
 from langchain.globals import set_debug
@@ -9,13 +10,14 @@ from langchain_openai import ChatOpenAI
 from mcp_use import MCPClient
 from pydantic import BaseModel, Field, create_model
 
-set_debug(True)
+set_debug(os.getenv("DEBUG", "false").lower() == "true")
 
-# --- Configuration pour LM Studio Server ---
-LLM_CHAT_SERVER_BASE_URL = "http://127.0.0.1:1234/v1"
-LLM_CHAT_MODEL = "openai/gpt-oss-20b" # ou "meta-llama-3.1-8b-instruct"
-LLM_CHAT_TEMPERATURE = 0.3
-LLM_CHAT_API_KEY = "not-needed"
+# --- Configuration via variables d'environnement ---
+LLM_CHAT_SERVER_BASE_URL = os.getenv("LLM_BASE_URL", "http://127.0.0.1:1234/v1")
+LLM_CHAT_MODEL = os.getenv("LLM_MODEL", "openai/gpt-oss-20b")
+LLM_CHAT_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.3"))
+LLM_CHAT_API_KEY = os.getenv("LLM_API_KEY", "not-needed")
+MCP_CONFIG_PATH = os.getenv("MCP_CONFIG_PATH", "/app/resources/servers.json")
 
 agent_executor: AgentExecutor | None = None
 mcp_client: MCPClient | None = None
@@ -31,7 +33,7 @@ async def build_agent() -> AgentExecutor:
         api_key=LLM_CHAT_API_KEY
     )
 
-    mcp_client = MCPClient.from_config_file("../resources/servers.json")
+    mcp_client = MCPClient.from_config_file(MCP_CONFIG_PATH)
     session = await mcp_client.create_session("movies-mcp-server")
     print("Connexion au serveur d'outils (MCP) établie.")
 
